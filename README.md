@@ -86,17 +86,53 @@ docker run -d --name ltijs-mongo \
 
 
 ## Walkthrough
-WIP -- Please visit the medium story page soon.
+Please read this article for complete walkthrough: [medium article](https://hariesef.medium.com/introducing-edugoes-lti-service-implementation-reference-for-lms-education-go-endpoint-services-0aaa9b855274)
+
+## Go Implemented Endpoints 
+**Health/Hello**
+- GET /api/health 
+- GET /api/hello
+
+**JWKS (public keys)**
+- GET /.well-known/jwks.json  
+- GET /api/.well-known/jwks.json  
+
+**LTI Launch & OIDC**
+- POST /api/launch/start  
+- GET /api/oidc/auth  
+- POST /api/oidc/auth
+
+**Deep Linking**
+- GET /api/deeplink/return  
+- POST /api/deeplink/return 
+
+**OAuth2 Token**
+- POST /api/oauth2/token 
+
+**Tools (CRUD)**
+- GET /api/tools 
+- GET /api/tools/{id}  
+- POST /api/tools  
+- DELETE /api/tools/{id}  
+
+**AGS (Assignments & Grades), context-scoped: /api/ags/contexts/{contextId}**
+- GET /lineitems  
+- POST /lineitems  
+- GET /lineitems/{lineItemId}  
+- PUT /lineitems/{lineItemId}  
+- DELETE /lineitems/{lineItemId}  
+- POST /lineitems/{lineItemId}/scores  
+- GET /lineitems/{lineItemId}/results  
+
+**NRPS (Roster), context-scoped: /api/nrps/contexts/{contextId}**
+- GET /members  
+- POST /members    (internal only)
+- DELETE /members/{userId}    (internal only)
 
 ## Repo structure
 - `be/` — Go backend (Platform endpoints: OIDC, Deep Linking, NRPS, AGS)
 - `fe/` — Vite + React + TypeScript frontend
 - `ltijs/` — Sample LTI Tool using ltijs (Node + Express)
-- `docs/deep-wiki/` — Project documentation (backend, frontend, ltijs)
+- `docs/deep-wiki/` — Project generated documentation (backend, frontend, ltijs) Open: [docs/deep-wiki/Index.md](./docs/deep-wiki/Index.md)
 
-## Start here (docs)
-- Open: [docs/deep-wiki/Index.md](./docs/deep-wiki/Index.md)
-  - Backend: OIDC, Deep Linking, NRPS, AGS
-  - Frontend: overview, ToolLaunch page, UI flows
-  - ltijs: overview, AGS, NRPS, env & run
 
