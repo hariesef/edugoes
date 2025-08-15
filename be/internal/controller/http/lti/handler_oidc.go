@@ -204,76 +204,77 @@ func (h *Handler) oidcAuth(w http.ResponseWriter, r *http.Request) {
 		builder = builder.Claim("https://purl.imsglobal.org/spec/lti/claim/resource_link", map[string]any{
 			"id": resourceLinkID,
 		})
-	}
 
-	// Add AGS endpoint claim with context-scoped lineitems URL and allowed scopes
-	// contextID was stored during launchStart and retrieved from validation state.
-	if contextID == "" {
-		logger.Debug("oidcAuth: missing context_id in state; falling back to dev-context")
-		contextID = "dev-context"
-	} else {
-		logger.Debug("oidcAuth: using context_id=%s", contextID)
-	}
-	base := h.issuer
-	if pub := os.Getenv("PUBLIC_BASE_URL"); pub != "" {
-		base = pub
-	}
-
-	// Resolve line item id from resourceLinkID using repository reverse lookup
-	lineItemId := ""
-	if resourceLinkID != "" {
-		if id, err := h.scores.GetLineItemIDByResourceLinkID(r.Context(), resourceLinkID); err != nil {
-			logger.Debug("oidcAuth: failed to get line item id for resourceLinkID %s: %v", resourceLinkID, err)
-		} else if id > 0 {
-			lineItemId = strconv.FormatInt(id, 10)
-			logger.Debug("oidcAuth: resolved lineItemId %s for resourceLinkID %s", lineItemId, resourceLinkID)
+		// Add AGS endpoint claim with context-scoped lineitems URL and allowed scopes
+		// contextID was stored during launchStart and retrieved from validation state.
+		if contextID == "" {
+			logger.Debug("oidcAuth: missing context_id in state; falling back to dev-context")
+			contextID = "dev-context"
+		} else {
+			logger.Debug("oidcAuth: using context_id=%s", contextID)
 		}
-	}
+		base := h.issuer
+		if pub := os.Getenv("PUBLIC_BASE_URL"); pub != "" {
+			base = pub
+		}
 
-	agsClaim := map[string]any{
-		// Tool can only access the lineItemId we specified/ linked to resourceLinkId.
-		"lineitem":  base + "/api/ags/contexts/" + contextID + "/lineitems/" + lineItemId,
-		"lineitems": base + "/api/ags/contexts/" + contextID + "/lineitems",
-		"scope": []string{
-			"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
-			// TODO: In production, scope lineitem (write/del) below must be removed,
-			// so that Tool can't messly delete the lineitem that we already tightly coupled with resourceLinkID.
-			// LMS should manage the final state of lineitem/gradebook, not the Tool.
-			"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem", // <-- to be removed
-			"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-			"https://purl.imsglobal.org/spec/lti-ags/scope/score",
-		},
-	}
-	logger.Debug("OIDC id_token AGS claim: %+v", agsClaim)
-	builder = builder.Claim("https://purl.imsglobal.org/spec/lti-ags/claim/endpoint", agsClaim)
+		// Resolve line item id from resourceLinkID using repository reverse lookup
+		lineItemId := ""
+		if resourceLinkID != "" {
+			if id, err := h.scores.GetLineItemIDByResourceLinkID(r.Context(), resourceLinkID); err != nil {
+				logger.Debug("oidcAuth: failed to get line item id for resourceLinkID %s: %v", resourceLinkID, err)
+			} else if id > 0 {
+				lineItemId = strconv.FormatInt(id, 10)
+				logger.Debug("oidcAuth: resolved lineItemId %s for resourceLinkID %s", lineItemId, resourceLinkID)
+			}
+		}
 
-	// NRPS claim: advertise context memberships endpoint and version
-	nrpsClaim := map[string]any{
-		"context_memberships_url": base + "/api/nrps/contexts/" + contextID + "/members",
-		"service_versions":        []string{"2.0"},
-	}
-	logger.Debug("OIDC id_token NRPS claim: %+v", nrpsClaim)
-	builder = builder.Claim("https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice", nrpsClaim)
-	// Also advertise token endpoint via LTI Services claim so tools know where to obtain an access token
-	services := []map[string]any{
-		{
-			"endpoint": base + "/oauth2/token",
+		agsClaim := map[string]any{
+			// Tool can only access the lineItemId we specified/ linked to resourceLinkId.
+			"lineitem":  base + "/api/ags/contexts/" + contextID + "/lineitems/" + lineItemId,
+			"lineitems": base + "/api/ags/contexts/" + contextID + "/lineitems",
 			"scope": []string{
 				"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
-				"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
+				// TODO: In production, scope lineitem (write/del) below must be removed,
+				// so that Tool can't messly delete the lineitem that we already tightly coupled with resourceLinkID.
+				// LMS should manage the final state of lineitem/gradebook, not the Tool.
+				"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem", // <-- to be removed
 				"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
 				"https://purl.imsglobal.org/spec/lti-ags/scope/score",
 			},
-		},
-		{
-			"endpoint": base + "/api/nrps/contexts/" + contextID + "/members",
-			"scope": []string{
-				"https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly",
+		}
+		logger.Debug("OIDC id_token AGS claim: %+v", agsClaim)
+		builder = builder.Claim("https://purl.imsglobal.org/spec/lti-ags/claim/endpoint", agsClaim)
+
+		// NRPS claim: advertise context memberships endpoint and version
+		nrpsClaim := map[string]any{
+			"context_memberships_url": base + "/api/nrps/contexts/" + contextID + "/members",
+			"service_versions":        []string{"2.0"},
+		}
+		logger.Debug("OIDC id_token NRPS claim: %+v", nrpsClaim)
+		builder = builder.Claim("https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice", nrpsClaim)
+		// Also advertise token endpoint via LTI Services claim so tools know where to obtain an access token
+		services := []map[string]any{
+			{
+				"endpoint": base + "/oauth2/token",
+				"scope": []string{
+					"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
+					"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
+					"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+					"https://purl.imsglobal.org/spec/lti-ags/scope/score",
+				},
 			},
-		},
+			{
+				"endpoint": base + "/api/nrps/contexts/" + contextID + "/members",
+				"scope": []string{
+					"https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly",
+				},
+			},
+		}
+		logger.Debug("OIDC id_token Services claim: %+v", services)
+		builder = builder.Claim("https://purl.imsglobal.org/spec/lti/claim/service", services)
 	}
-	logger.Debug("OIDC id_token Services claim: %+v", services)
-	builder = builder.Claim("https://purl.imsglobal.org/spec/lti/claim/service", services)
+
 	for k, v := range extraClaims {
 		builder = builder.Claim(k, v)
 	}

@@ -1,12 +1,15 @@
 package lti
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/quipper/poc/lti/be/pkg/common/logger"
 	roster "github.com/quipper/poc/lti/be/pkg/repositories/roster"
 )
 
@@ -18,6 +21,14 @@ import (
 func (h *Handler) nrpsListMembers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	contextID := chi.URLParam(r, "contextId")
+	// Log raw request details
+	logger.Debug("NRPS list members raw: method=%s path=%s query=%s", r.Method, r.URL.Path, r.URL.RawQuery)
+	if r.Body != nil {
+		if b, _ := io.ReadAll(r.Body); len(b) > 0 {
+			logger.Debug("NRPS list members body: %s", string(b))
+		}
+		r.Body = io.NopCloser(bytes.NewReader(nil))
+	}
 	// Pagination params
 	q := r.URL.Query()
 	limit := 50
@@ -32,9 +43,11 @@ func (h *Handler) nrpsListMembers(w http.ResponseWriter, r *http.Request) {
 			offset = v
 		}
 	}
+	logger.Debug("NRPS list members: context_id=%s offset=%d limit=%d", contextID, offset, limit)
 	// DB-level pagination
 	page, total, err := h.roster.ListMembersPage(ctx, contextID, offset, limit)
 	if err != nil {
+		logger.Debug("NRPS list members error: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -45,14 +58,18 @@ func (h *Handler) nrpsListMembers(w http.ResponseWriter, r *http.Request) {
 		nextURL := buildPageURL(r, offset+limit, limit)
 		w.Header().Add("Link", "<"+nextURL+">; rel=\"next\"")
 	}
-    // Ensure members serializes as [] instead of null when empty
-    if page == nil {
-        page = []*roster.Member{}
-    }
+	// Ensure members serializes as [] instead of null when empty
+	if page == nil {
+		page = []*roster.Member{}
+	}
+	logger.Debug("NRPS list members ok: returned=%d total=%d has_next=%v", len(page), total, offset+limit < total)
 	resp := map[string]any{
 		"id":      containerID,
 		"context": map[string]any{"id": contextID},
 		"members": page,
+	}
+	if b, err := json.Marshal(resp); err == nil {
+		logger.Debug("NRPS list members response: %s", string(b))
 	}
 	_ = json.NewEncoder(w).Encode(resp)
 }

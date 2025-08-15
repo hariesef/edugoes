@@ -220,7 +220,9 @@ func (h *Handler) oauth2Token(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	now := time.Now()
-	exp2 := now.Add(1 * time.Hour)
+	//TODO: extend token expiry to 1 hour
+	//this short time is for easier logging since Tool will cache the token and will not call /oauth2/token again
+	exp2 := now.Add(1 * time.Minute)
 	aud := h.issuer + "/api" // audience for your APIs; adjust per service if needed
 	accessJWT, err := jwt.NewBuilder().
 		Issuer(h.issuer).
