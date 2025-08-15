@@ -1,0 +1,27 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--panel);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 16px;
+}
+
+.sidebar-title {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-bottom: 8px;
+}
+
+.menu-item {
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.menu-item:hover { border-color: rgba(255,255,255,0.12); }
+.menu-item.active { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.3); }

@@ -1,0 +1,7 @@
+be/lti.db
+be/validation.db
+be/validation.db-shm
+be/validation.db-wal
+be/scores.db
+be/roster.db
+ltijs/.env

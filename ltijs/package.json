@@ -1,0 +1,18 @@
+{
+  "name": "ltijs",
+  "version": "1.0.0",
+  "description": "Minimal ltijs tool for local testing",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"No tests\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "ltijs": "^5.9.7"
+  }
+}

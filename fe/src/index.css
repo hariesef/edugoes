@@ -1,0 +1,3 @@
+/* basic reset + smooth fonts */
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
