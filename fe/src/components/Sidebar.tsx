@@ -16,7 +16,7 @@ export function Sidebar({
 }) {
   return (
     <aside className="sidebar">
-      <div className="sidebar-title">LTI PoC</div>
+      <div className="sidebar-title">Edugoes LTI</div>
       <nav>
         {items.map((item) => (
           <button
