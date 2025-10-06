@@ -95,7 +95,12 @@ func (h *Handler) oidcAuth(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid redirect_uri", http.StatusBadRequest)
 		return
 	}
-	allowed := tool.TargetLinkURL
+
+	allowed := tool.TargetLaunchURL
+	if ltiMessageHint == "deep_linking" {
+		allowed = tool.TargetLinkURL
+	}
+
 	if allowed == "" {
 		allowed = tool.AuthURL
 	}

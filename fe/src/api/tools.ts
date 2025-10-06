@@ -4,7 +4,7 @@ export type Tool = {
   client_id: string
   auth_url?: string
   target_link_url?: string
-  token_url?: string
+  target_launch_url?: string
   key_set_url?: string
   created_at?: string
 }
@@ -14,7 +14,7 @@ export type CreateToolPayload = {
   client_id: string
   auth_url?: string
   target_link_url?: string
-  token_url?: string
+  target_launch_url?: string
   key_set_url?: string
 }
 

@@ -67,7 +67,8 @@ export function ToolLaunch() {
                 <div style={{ fontWeight: 600 }}>{t.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text)' }}>client_id: {t.client_id}</div>
                 {t.auth_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>login_initiation_url: {t.auth_url}</div>}
-                {t.target_link_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>target_link_uri: {t.target_link_url}</div>}
+                {t.target_link_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>target_link_url: {t.target_link_url}</div>}
+                {t.target_launch_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>target_launch_url: {t.target_launch_url}</div>}
                 {t.key_set_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>jwks: {t.key_set_url}</div>}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -83,7 +84,7 @@ export function ToolLaunch() {
                     Deep Link
                   </button>
                 </form>
-              </div>
+              </div> 
             </div>
           </li>
         ))}

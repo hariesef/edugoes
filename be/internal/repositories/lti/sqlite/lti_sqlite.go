@@ -141,8 +141,9 @@ func NewSQLiteRepo(path string) (*SQLiteRepo, error) {
 	if err := initSchema(db); err != nil {
 		return nil, err
 	}
-    // Best-effort migration: add target_link_url if column not yet present
-    _, _ = db.Exec(`ALTER TABLE tools ADD COLUMN target_link_url TEXT`)
+    // Best-effort migration: add target_launch_url if column not yet present and remove token_url if present
+    _, _ = db.Exec(`ALTER TABLE tools ADD COLUMN target_launch_url TEXT`)
+    _, _ = db.Exec(`ALTER TABLE tools DROP COLUMN token_url`)
 	return &SQLiteRepo{db: db, wg: &sync.WaitGroup{}}, nil
 }
 
@@ -154,7 +155,7 @@ func initSchema(db *sql.DB) error {
             client_id TEXT NOT NULL UNIQUE,
             auth_url TEXT,
             target_link_url TEXT,
-            token_url TEXT,
+            target_launch_url TEXT,
             key_set_url TEXT,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
@@ -201,9 +202,9 @@ func (r *SQLiteRepo) Disconnect() {
 func (r *SQLiteRepo) RegisterTool(ctx context.Context, t *repoIface.Tool) (int64, error) {
 	now := time.Now().UTC()
 	res, err := r.db.ExecContext(ctx, `
-        INSERT INTO tools (name, client_id, auth_url, target_link_url, token_url, key_set_url, created_at)
+        INSERT INTO tools (name, client_id, auth_url, target_link_url, target_launch_url, key_set_url, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, t.Name, t.ClientID, t.AuthURL, t.TargetLinkURL, t.TokenURL, t.KeySetURL, now)
+    `, t.Name, t.ClientID, t.AuthURL, t.TargetLinkURL, t.TargetLaunchURL, t.KeySetURL, now)
 	if err != nil {
 		return 0, err
 	}
@@ -222,7 +223,7 @@ func (r *SQLiteRepo) DeleteToolByID(ctx context.Context, id int64) error {
 }
 
 func (r *SQLiteRepo) ListTools(ctx context.Context) ([]*repoIface.Tool, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, name, client_id, auth_url, target_link_url, token_url, key_set_url, created_at FROM tools ORDER BY id ASC`)
+	rows, err := r.db.QueryContext(ctx, `SELECT id, name, client_id, auth_url, target_link_url, target_launch_url, key_set_url, created_at FROM tools ORDER BY id ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +232,7 @@ func (r *SQLiteRepo) ListTools(ctx context.Context) ([]*repoIface.Tool, error) {
 	for rows.Next() {
 		var t repoIface.Tool
 		var created time.Time
-		if err := rows.Scan(&t.ID, &t.Name, &t.ClientID, &t.AuthURL, &t.TargetLinkURL, &t.TokenURL, &t.KeySetURL, &created); err != nil {
+		if err := rows.Scan(&t.ID, &t.Name, &t.ClientID, &t.AuthURL, &t.TargetLinkURL, &t.TargetLaunchURL, &t.KeySetURL, &created); err != nil {
 			return nil, err
 		}
 		t.CreatedAt = created
@@ -244,10 +245,10 @@ func (r *SQLiteRepo) ListTools(ctx context.Context) ([]*repoIface.Tool, error) {
 }
 
 func (r *SQLiteRepo) GetToolByID(ctx context.Context, id int64) (*repoIface.Tool, error) {
-	row := r.db.QueryRowContext(ctx, `SELECT id, name, client_id, auth_url, target_link_url, token_url, key_set_url, created_at FROM tools WHERE id = ?`, id)
+	row := r.db.QueryRowContext(ctx, `SELECT id, name, client_id, auth_url, target_link_url, target_launch_url, key_set_url, created_at FROM tools WHERE id = ?`, id)
 	var t repoIface.Tool
 	var created time.Time
-	if err := row.Scan(&t.ID, &t.Name, &t.ClientID, &t.AuthURL, &t.TargetLinkURL, &t.TokenURL, &t.KeySetURL, &created); err != nil {
+	if err := row.Scan(&t.ID, &t.Name, &t.ClientID, &t.AuthURL, &t.TargetLinkURL, &t.TargetLaunchURL, &t.KeySetURL, &created); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -259,10 +260,10 @@ func (r *SQLiteRepo) GetToolByID(ctx context.Context, id int64) (*repoIface.Tool
 
 // GetToolByClientID returns a tool by client_id.
 func (r *SQLiteRepo) GetToolByClientID(ctx context.Context, clientID string) (*repoIface.Tool, error) {
-	row := r.db.QueryRowContext(ctx, `SELECT id, name, client_id, auth_url, target_link_url, token_url, key_set_url, created_at FROM tools WHERE client_id = ?`, clientID)
+	row := r.db.QueryRowContext(ctx, `SELECT id, name, client_id, auth_url, target_link_url, target_launch_url, key_set_url, created_at FROM tools WHERE client_id = ?`, clientID)
 	var t repoIface.Tool
 	var created time.Time
-	if err := row.Scan(&t.ID, &t.Name, &t.ClientID, &t.AuthURL, &t.TargetLinkURL, &t.TokenURL, &t.KeySetURL, &created); err != nil {
+	if err := row.Scan(&t.ID, &t.Name, &t.ClientID, &t.AuthURL, &t.TargetLinkURL, &t.TargetLaunchURL, &t.KeySetURL, &created); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}

@@ -11,7 +11,7 @@ function ToolRegistrationImpl() {
   const [name, setName] = useState('')
   const [clientId, setClientId] = useState('')
   const [authUrl, setAuthUrl] = useState('')
-  const [tokenUrl, setTokenUrl] = useState('')
+  const [targetLaunchUrl, setTargetLaunchUrl] = useState('')
   const [targetLinkUrl, setTargetLinkUrl] = useState('')
   const [keySetUrl, setKeySetUrl] = useState('')
   const [loading, setLoading] = useState(false)
@@ -45,14 +45,14 @@ function ToolRegistrationImpl() {
         client_id: clientId.trim(),
         auth_url: authUrl.trim() || undefined,
         target_link_url: targetLinkUrl.trim() || undefined,
-        token_url: tokenUrl.trim() || undefined,
+        target_launch_url: targetLaunchUrl.trim() || undefined,
         key_set_url: keySetUrl.trim() || undefined,
       } as any)
       setName('')
       setClientId('')
       setAuthUrl('')
       setTargetLinkUrl('')
-      setTokenUrl('')
+      setTargetLaunchUrl('')
       setKeySetUrl('')
       await refresh()
     } catch (e: any) {
@@ -88,12 +88,12 @@ function ToolRegistrationImpl() {
           <input value={authUrl} onChange={(e) => setAuthUrl(e.target.value)} placeholder="https://..." />
         </label>
         <label>
-          <div style={{ color: 'var(--text)' }}>Target Link URL</div>
+          <div style={{ color: 'var(--text)' }}>Deep Link URL</div>
           <input value={targetLinkUrl} onChange={(e) => setTargetLinkUrl(e.target.value)} placeholder="https://... (if different from Auth URL)" />
         </label>
         <label>
-          <div style={{ color: 'var(--text)' }}>Token URL</div>
-          <input value={tokenUrl} onChange={(e) => setTokenUrl(e.target.value)} placeholder="https://..." />
+          <div style={{ color: 'var(--text)' }}>Resource Launch URL</div>
+          <input value={targetLaunchUrl} onChange={(e) => setTargetLaunchUrl(e.target.value)} placeholder="https://..." />
         </label>
         <label>
           <div style={{ color: 'var(--text)' }}>JWKS URL</div>
@@ -117,8 +117,8 @@ function ToolRegistrationImpl() {
             </div>
             <div style={{ fontSize: 12, color: 'var(--text)' }}>Client ID: {t.client_id}</div>
             {t.auth_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>Auth: {t.auth_url}</div>}
-            {t.target_link_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>Target Link: {t.target_link_url}</div>}
-            {t.token_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>Token: {t.token_url}</div>}
+            {t.target_link_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>Deep Link: {t.target_link_url}</div>}
+            {t.target_launch_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>Resource Launch: {t.target_launch_url}</div>}
             {t.key_set_url && <div style={{ fontSize: 12, color: 'var(--text)' }}>JWKS: {t.key_set_url}</div>}
           </div>
         ))}
