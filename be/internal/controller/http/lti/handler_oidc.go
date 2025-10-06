@@ -96,11 +96,7 @@ func (h *Handler) oidcAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allowed := tool.TargetLaunchURL
-	if ltiMessageHint == "deep_linking" {
-		allowed = tool.TargetLinkURL
-	}
-
+	allowed := tool.TargetLaunchURL //as per spec, verify URL against target launch
 	if allowed == "" {
 		allowed = tool.AuthURL
 	}
