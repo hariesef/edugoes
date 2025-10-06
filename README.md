@@ -83,7 +83,10 @@ docker run -d --name ltijs-mongo \
   -e MONGO_INITDB_ROOT_PASSWORD=ltijsPass \
   mongo:6
 ```
-
+To launch the ltijs FE service simply run
+```
+npm start
+```
 
 ## Walkthrough
 Please read this article for complete walkthrough: [medium article](https://hariesef.medium.com/introducing-edugoes-lti-service-implementation-reference-for-lms-education-go-endpoint-services-0aaa9b855274)
